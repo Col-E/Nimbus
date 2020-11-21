@@ -19,4 +19,5 @@ public interface BinaryConstants {
 	byte KIND_BYTES  = 9;
 	byte KIND_UTF    = 10;
 	byte KIND_STRUCT = 11;
+	byte KIND_LIST   = 12;
 }

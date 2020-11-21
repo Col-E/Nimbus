@@ -1,6 +1,7 @@
 package me.coley.nimbus.net.serial;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Object deserializer interface.
@@ -105,6 +106,10 @@ public interface ObjectReader<S> extends SerialEntity<S> {
 	/**
 	 * @param key
 	 * 		Value key.
+	 * @param type
+	 * 		Value declared type.
+	 * @param <E>
+	 * 		Value type.
 	 *
 	 * @return Associated {@code enum} value.
 	 */
@@ -116,8 +121,24 @@ public interface ObjectReader<S> extends SerialEntity<S> {
 	/**
 	 * @param key
 	 * 		Value key.
+	 * @param type
+	 * 		Class of type.
+	 * @param <T>
+	 * 		Generic type.
 	 *
 	 * @return Associated generic value.
 	 */
 	<T> T getType(String key, Class<T> type);
+
+	/**
+	 * @param key
+	 * 		Value key.
+	 * @param elementType
+	 * 		Class of element type.
+	 * @param <T>
+	 * 		Generic element type.
+	 *
+	 * @return Associated list value.
+	 */
+	<T> List<T> getList(String key, Class<T> elementType);
 }

@@ -1,6 +1,7 @@
 package me.coley.nimbus.net.serial;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Object serializer interface.
@@ -125,4 +126,16 @@ public interface ObjectWriter<S> extends SerialEntity<S> {
 	 * 		Generic type.
 	 */
 	<T> void setType(String key, T value, Class<T> type);
+
+	/**
+	 * @param key
+	 * 		Value key.
+	 * @param value
+	 * 		Associated generic list to write.
+	 * @param elementType
+	 * 		Class of element type.
+	 * @param <T>
+	 * 		Generic element type.
+	 */
+	<T> void setList(String key, List<T> value, Class<T> elementType);
 }

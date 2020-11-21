@@ -6,6 +6,7 @@ import me.coley.nimbus.net.serial.impl.ContextualTypeSerializer;
 import me.coley.nimbus.net.serial.impl.binary.BinaryObjectReader;
 import me.coley.nimbus.net.serial.impl.binary.BinaryObjectWriter;
 import me.coley.nimbus.stuff.ConnectionType;
+import me.coley.nimbus.stuff.ListWrapper;
 import me.coley.nimbus.stuff.ServerPacket;
 import org.junit.jupiter.api.Test;
 
@@ -39,4 +40,56 @@ public class BinarySerialTests {
 		}
 	}
 
+	@Test
+	void testLists() throws IOException {
+		StringList strings = new StringList();
+		strings.addValues("one", "two", "three", "four", "");
+		IntList ints = new IntList();
+		ints.addValues(1, 2, 3, 4, -1);
+		PacketList packets = new PacketList();
+		packets.addValues(
+				new ServerPacket(ConnectionType.SSH, "fizz", 3),
+				new ServerPacket(ConnectionType.FTP, "buzz", 5),
+				new ServerPacket(ConnectionType.FTP, "fizzbuzz", 15));
+		// Add support for the types
+		ctx.getTypeFactory().addSerializer(StringList.class,
+				new ContextualTypeSerializer<>(ctx, StringList.class, StringList::new));
+		ctx.getTypeFactory().addSerializer(IntList.class,
+				new ContextualTypeSerializer<>(ctx, IntList.class, IntList::new));
+		ctx.getTypeFactory().addSerializer(PacketList.class,
+				new ContextualTypeSerializer<>(ctx, PacketList.class, PacketList::new));
+		ctx.getTypeFactory().addSerializer(ServerPacket.class,
+				new ContextualTypeSerializer<>(ctx, ServerPacket.class, ServerPacket::new));
+		// Deserialize lists
+		byte[] serializedStrings = ctx.serializeObject(strings);
+		StringList deserializedStrings = ctx.deserializeObject(serializedStrings, StringList.class);
+		assertEquals(strings, deserializedStrings);
+		byte[] serializedInts = ctx.serializeObject(ints);
+		IntList deserializedInts = ctx.deserializeObject(serializedInts, IntList.class);
+		assertEquals(ints, deserializedInts);
+		byte[] serializedPackets = ctx.serializeObject(packets);
+		PacketList deserializedPackets = ctx.deserializeObject(serializedPackets, PacketList.class);
+		assertEquals(packets, deserializedPackets);
+	}
+
+	static class StringList extends ListWrapper<String> {
+		@Override
+		public Class<String> getElementType() {
+			return String.class;
+		}
+	}
+
+	static class IntList extends ListWrapper<Integer> {
+		@Override
+		public Class<Integer> getElementType() {
+			return int.class;
+		}
+	}
+
+	static class PacketList extends ListWrapper<ServerPacket> {
+		@Override
+		public Class<ServerPacket> getElementType() {
+			return ServerPacket.class;
+		}
+	}
 }

@@ -7,6 +7,8 @@ import me.coley.nimbus.util.ThrowingBiConsumer;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -87,6 +89,51 @@ public class BinaryObjectWriter extends BinaryIO implements ObjectWriter<byte[]>
 	}
 
 	@Override
+	public <T> void setList(String key, List<T> value, Class<T> elementType) {
+		try {
+			List<byte[]> serializedValue = new ArrayList<>();
+			for (T element : value)
+				serializedValue.add(serializeListElement(elementType, element));
+			// Note that instead of using the normal list class, we operate via a wrapper which lets us store
+			// the original type of the list so context-less serializers can look up the data later.
+			getOrCreateMap(ListWrapper.class).put(key, new ListWrapper<>(serializedValue, elementType));
+		} catch (IOException ex) {
+			throw new IllegalArgumentException("Unable to serialize list type: " + elementType.getName(), ex);
+		}
+	}
+
+	private <T> byte[] serializeListElement(Class<T> elementType, T element) throws IOException {
+		// Check if element type is non-standard
+		if (!isSimpleType(elementType))
+			return getTypeFactory().serialize(elementType, element);
+		// Use known serial patterns
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try (DataOutputStream dos = new DataOutputStream(baos)) {
+			if (elementType.equals(boolean.class) || elementType.equals(Boolean.class)) {
+				dos.writeBoolean((Boolean) element);
+			} else if (elementType.equals(byte.class) || elementType.equals(Byte.class)) {
+				dos.writeByte((Byte) element);
+			} else if (elementType.equals(char.class) || elementType.equals(Character.class)) {
+				dos.writeChar((Integer) element);
+			} else if (elementType.equals(int.class) || elementType.equals(Integer.class)) {
+				dos.writeInt((Integer) element);
+			} else if (elementType.equals(float.class) || elementType.equals(Float.class)) {
+				dos.writeFloat((Float) element);
+			} else if (elementType.equals(double.class) || elementType.equals(Double.class)) {
+				dos.writeDouble((Double) element);
+			} else if (elementType.equals(String.class)) {
+				dos.writeUTF((String) element);
+			} else if (elementType.equals(byte[].class)) {
+				dos.write((byte[]) element);
+			} else  {
+				throw new IllegalStateException("Unhandled list type: " + elementType.getName());
+			}
+		}
+		return baos.toByteArray();
+	}
+
+	@Override
+	@SuppressWarnings("rawtypes")
 	public byte[] generate() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (DataOutputStream dos = new DataOutputStream(baos)) {
@@ -101,14 +148,36 @@ public class BinaryObjectWriter extends BinaryIO implements ObjectWriter<byte[]>
 			writeValuesOfType(dos, double.class, KIND_DOUBLE, 8, (ThrowingBiConsumer<DataOutputStream, Double>) DataOutputStream::writeDouble);
 			writeValuesOfType(dos, long.class, KIND_LONG, 8, (ThrowingBiConsumer<DataOutputStream, Long>) DataOutputStream::writeLong);
 			writeValuesOfType(dos, String.class, KIND_UTF, -1, (ThrowingBiConsumer<DataOutputStream, String>) DataOutputStream::writeUTF);
+			writeValuesOfType(dos, ListWrapper.class, KIND_LIST, -1, (ThrowingBiConsumer<DataOutputStream, ListWrapper>) this::writeList);
 			writeValuesOfType(dos, byte[].class, KIND_BYTES, -1, bytesWriter);
 			writeValuesOfType(dos, byte[].class, KIND_STRUCT, -1, bytesWriter);
 		}
 		return baos.toByteArray();
 	}
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private void writeList(DataOutputStream dos, ListWrapper rawList) throws IOException {
+		// Write:
+		//  - kind
+		//  - list size
+		//  - entries:
+		//    - size
+		//    - value
+		dos.writeByte(SIMPLE_TYPES.getOrDefault(rawList.elementType, KIND_STRUCT));
+		dos.writeInt(rawList.serialList.size());
+		for (byte[] element : (List<byte[]>) rawList.serialList) {
+			dos.writeInt(element.length);
+			dos.write(element, 0, element.length);
+		}
+	}
+
 	private <V> void writeValuesOfType(DataOutputStream dos, Class<V> key, int dataKind, int dataSize, BiConsumer<DataOutputStream, V> writer) throws IOException {
 		for (Map.Entry<String, V> entry : getMap(key).entrySet()) {
+			// Write:
+			//  - key
+			//  - kind
+			//  - entry-size
+			//  - entry-value
 			dos.writeUTF(entry.getKey());
 			dos.writeByte(dataKind);
 			if (dataSize > 0) {
@@ -127,5 +196,21 @@ public class BinaryObjectWriter extends BinaryIO implements ObjectWriter<byte[]>
 		dos.close();
 		baos.close();
 		return baos.size();
+	}
+
+	/**
+	 * Used to associate a stored serialized list with its original element type.
+	 *
+	 * @param <T>
+	 * 		Generic element type.
+	 */
+	private static class ListWrapper<T> {
+		private final List<byte[]> serialList;
+		private final Class<T> elementType;
+
+		public ListWrapper(List<byte[]> serialList, Class<T> elementType) {
+			this.serialList = serialList;
+			this.elementType = elementType;
+		}
 	}
 }
