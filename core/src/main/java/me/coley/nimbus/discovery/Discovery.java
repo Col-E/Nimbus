@@ -1,8 +1,8 @@
-package me.coley.nimbus.net.discovery;
+package me.coley.nimbus.discovery;
 
-import me.coley.nimbus.net.Client;
-import me.coley.nimbus.net.NetContext;
-import me.coley.nimbus.net.NetEntity;
+import me.coley.nimbus.Client;
+import me.coley.nimbus.Nimbus;
+import me.coley.nimbus.NimbusEntity;
 import me.coley.nimbus.util.Log;
 import org.slf4j.Logger;
 
@@ -23,14 +23,14 @@ import java.util.function.Consumer;
  *
  * @author Matt Coley
  */
-public class Discovery implements NetEntity {
+public class Discovery implements NimbusEntity {
 	private static final String DEFAULT_MULTICAST_ADDRESS = "239.78.73.77";
 	private static final int DEFAULT_MULTICAST_PORT = 6677;
 	private static final byte[] DISCOVER_DATA_MATCH = {0x4E, 0x49, 0x4D, 0x42};
 	private static final long DISCOVER_INTERVAL_MS = 5_000;
 	private static final Logger logger = Log.NETWORKING;
 	private final ExecutorService service = Executors.newFixedThreadPool(2);
-	private final NetContext context;
+	private final Nimbus nimbus;
 	private final Client client;
 	private String multicastAddress = DEFAULT_MULTICAST_ADDRESS;
 	private int multicastPort = DEFAULT_MULTICAST_PORT;
@@ -46,7 +46,7 @@ public class Discovery implements NetEntity {
 	 */
 	public Discovery(Client client) {
 		this.client = client;
-		this.context = client.getNetContext();
+		this.nimbus = client.getNimbus();
 	}
 
 	/**
@@ -173,7 +173,7 @@ public class Discovery implements NetEntity {
 				logger.debug("Found new client via discovery {}", clientAddress);
 				// Notify listeners of new client's existence
 				if (onDiscover != null) {
-					onDiscover.accept(new Client(context, clientAddress));
+					onDiscover.accept(new Client(nimbus, clientAddress));
 				}
 			}
 		} catch (Exception ex) {
@@ -194,7 +194,7 @@ public class Discovery implements NetEntity {
 	}
 
 	@Override
-	public NetContext getNetContext() {
-		return context;
+	public Nimbus getNimbus() {
+		return nimbus;
 	}
 }

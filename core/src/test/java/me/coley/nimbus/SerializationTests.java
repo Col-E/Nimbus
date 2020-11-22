@@ -4,7 +4,6 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import me.coley.nimbus.net.NetContext;
 import me.coley.nimbus.stuff.ConnectionType;
 import me.coley.nimbus.stuff.ListWrapper;
 import me.coley.nimbus.stuff.ServerPacket;
@@ -13,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class BinarySerialTests {
-	private final NetContext ctx = new NetContext();
+public class SerializationTests {
+	private final Nimbus ctx = new Nimbus();
 
 	@BeforeEach
 	void setupCustomTypeSerial() {
@@ -38,7 +37,7 @@ public class BinarySerialTests {
 	}
 
 	@Test
-	void testPacket() {
+	void testConcreteType() {
 		// Do serial/deserial of the type, given a few different instances
 		ServerPacket[] packets = new ServerPacket[]{
 				new ServerPacket(ConnectionType.SSH, "localhost", 25565),
@@ -48,14 +47,13 @@ public class BinarySerialTests {
 		for (ServerPacket original : packets) {
 			byte[] serialized = ctx.getSerialization().serializeObject(original);
 			ServerPacket deserialized = ctx.getSerialization().deserializeObject(serialized, ServerPacket.class);
-			// Validate
 			assertEquals(original, deserialized);
 		}
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	void testLists() {
+	void testGenericLists() {
 		ListWrapper<String> strings = new ListWrapper<>();
 		strings.addValues("one", "two", "three", "four", "");
 		ListWrapper<Integer> ints = new ListWrapper<>();

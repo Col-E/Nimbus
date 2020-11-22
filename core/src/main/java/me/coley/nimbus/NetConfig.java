@@ -1,4 +1,4 @@
-package me.coley.nimbus.net;
+package me.coley.nimbus;
 
 import java.util.HashMap;
 

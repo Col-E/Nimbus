@@ -1,22 +1,22 @@
-package me.coley.nimbus.net;
+package me.coley.nimbus;
 
-import me.coley.nimbus.net.discovery.Discovery;
+import me.coley.nimbus.discovery.Discovery;
 
 /**
  * Network participant client.
  *
  * @author Matt Coley
  */
-public class Client implements NetEntity {
-	private final NetContext netContext;
+public class Client implements NimbusEntity {
+	private final Nimbus nimbus;
 	private final String address;
 	// TODO: Publish-Subscribe with cache
 	//  Cache Reading
 	//  - Cache#peek() - Peek latest value
 	//  - Cache#pop()  - Pop latest value
 
-	public Client(NetContext netContext, String address) {
-		this.netContext = netContext;
+	public Client(Nimbus nimbus, String address) {
+		this.nimbus = nimbus;
 		this.address = address;
 	}
 
@@ -46,7 +46,7 @@ public class Client implements NetEntity {
 	}
 
 	@Override
-	public NetContext getNetContext() {
-		return netContext;
+	public Nimbus getNimbus() {
+		return nimbus;
 	}
 }

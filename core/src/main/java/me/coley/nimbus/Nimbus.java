@@ -1,22 +1,22 @@
-package me.coley.nimbus.net;
+package me.coley.nimbus;
 
-import me.coley.nimbus.net.serial.Serialization;
+import me.coley.nimbus.serial.Serialization;
 import me.coley.nimbus.util.NetworkUtils;
 
 import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Class to outline access to network utilities and factory methods.
+ * Nimbus core type. Provides access to all services.
  *
  * @author Matt Coley
  */
-public class NetContext {
+public class Nimbus {
 	private final Serialization serialization = new Serialization();
 	private final NetConfig config = new NetConfig();
 
 	/**
-	 * Creates a client configured with the current network context.
+	 * Creates a client configured with the current nimbus context.
 	 * It represents the local device.
 	 *
 	 * @return Client representing local self.

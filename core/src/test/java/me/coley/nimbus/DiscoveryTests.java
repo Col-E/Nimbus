@@ -1,8 +1,6 @@
 package me.coley.nimbus;
 
-import me.coley.nimbus.net.Client;
-import me.coley.nimbus.net.NetContext;
-import me.coley.nimbus.net.discovery.Discovery;
+import me.coley.nimbus.discovery.Discovery;
 import org.junit.jupiter.api.RepeatedTest;
 import org.mockito.Mockito;
 
@@ -13,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DiscoveryTests {
-	private final NetContext ctx = new NetContext();
+	private final Nimbus ctx = new Nimbus();
 
 	@RepeatedTest(5)
 	void test() throws Exception {

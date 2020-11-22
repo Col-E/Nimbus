@@ -1,4 +1,4 @@
-package me.coley.nimbus.net.serial;
+package me.coley.nimbus.serial;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
