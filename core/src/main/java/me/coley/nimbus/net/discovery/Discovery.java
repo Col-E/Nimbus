@@ -21,25 +21,22 @@ import java.util.function.Consumer;
 /**
  * Local client discovery. It is intended that only one discovery instance is run per application.
  *
- * @param <S>
- * 		Serialized intermediate type.
- *
  * @author Matt Coley
  */
-public class Discovery<S> implements NetEntity<S> {
+public class Discovery implements NetEntity {
 	private static final String DEFAULT_MULTICAST_ADDRESS = "239.78.73.77";
 	private static final int DEFAULT_MULTICAST_PORT = 6677;
 	private static final byte[] DISCOVER_DATA_MATCH = {0x4E, 0x49, 0x4D, 0x42};
 	private static final long DISCOVER_INTERVAL_MS = 5_000;
 	private static final Logger logger = Log.NETWORKING;
 	private final ExecutorService service = Executors.newFixedThreadPool(2);
-	private final NetContext<S> context;
-	private final Client<S> client;
+	private final NetContext context;
+	private final Client client;
 	private String multicastAddress = DEFAULT_MULTICAST_ADDRESS;
 	private int multicastPort = DEFAULT_MULTICAST_PORT;
 	private Future<?> discoveryFuture;
 	private Future<?> announceFuture;
-	private Consumer<Client<S>> onDiscover;
+	private Consumer<Client> onDiscover;
 
 	/**
 	 * Create a discoverer for the local network.
@@ -47,7 +44,7 @@ public class Discovery<S> implements NetEntity<S> {
 	 * @param client
 	 * 		Client to represent the current user.
 	 */
-	public Discovery(Client<S> client) {
+	public Discovery(Client client) {
 		this.client = client;
 		this.context = client.getNetContext();
 	}
@@ -56,7 +53,7 @@ public class Discovery<S> implements NetEntity<S> {
 	 * @param onDiscover
 	 * 		Consumer to handle discovered clients.
 	 */
-	public void setOnDiscover(Consumer<Client<S>> onDiscover) {
+	public void setOnDiscover(Consumer<Client> onDiscover) {
 		this.onDiscover = onDiscover;
 	}
 
@@ -176,7 +173,7 @@ public class Discovery<S> implements NetEntity<S> {
 				logger.debug("Found new client via discovery {}", clientAddress);
 				// Notify listeners of new client's existence
 				if (onDiscover != null) {
-					onDiscover.accept(new Client<>(context, clientAddress));
+					onDiscover.accept(new Client(context, clientAddress));
 				}
 			}
 		} catch (Exception ex) {
@@ -197,7 +194,7 @@ public class Discovery<S> implements NetEntity<S> {
 	}
 
 	@Override
-	public NetContext<S> getNetContext() {
+	public NetContext getNetContext() {
 		return context;
 	}
 }

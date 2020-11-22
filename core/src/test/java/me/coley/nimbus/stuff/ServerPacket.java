@@ -1,17 +1,11 @@
 package me.coley.nimbus.stuff;
 
-import me.coley.nimbus.net.serial.ObjectReader;
-import me.coley.nimbus.net.serial.ObjectWriter;
-import me.coley.nimbus.net.serial.NimbusSerializable;
-
 import java.util.Objects;
 
-public class ServerPacket implements NimbusSerializable {
-	private ConnectionType type;
-	private String ip;
-	private int port;
-
-	public ServerPacket() {}
+public class ServerPacket {
+	private final ConnectionType type;
+	private final String ip;
+	private final int port;
 
 	public ServerPacket(ConnectionType type, String ip, int port) {
 		this.type = type;
@@ -19,18 +13,16 @@ public class ServerPacket implements NimbusSerializable {
 		this.port = port;
 	}
 
-	@Override
-	public void read(ObjectReader<?> reader) {
-		type = reader.getEnum("type", ConnectionType.class);
-		ip = reader.getString("ip");
-		port = reader.getInt("port");
+	public ConnectionType getType() {
+		return type;
 	}
 
-	@Override
-	public void write(ObjectWriter<?> writer) {
-		writer.setEnum("type", type);
-		writer.setString("ip", ip);
-		writer.setInt("port", port);
+	public String getIp() {
+		return ip;
+	}
+
+	public int getPort() {
+		return port;
 	}
 
 	@Override

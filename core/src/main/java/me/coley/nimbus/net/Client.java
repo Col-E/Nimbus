@@ -5,20 +5,17 @@ import me.coley.nimbus.net.discovery.Discovery;
 /**
  * Network participant client.
  *
- * @param <S>
- * 		Serialized intermediate type.
- *
  * @author Matt Coley
  */
-public class Client<S> implements NetEntity<S> {
-	private final NetContext<S> netContext;
+public class Client implements NetEntity {
+	private final NetContext netContext;
 	private final String address;
 	// TODO: Publish-Subscribe with cache
 	//  Cache Reading
 	//  - Cache#peek() - Peek latest value
 	//  - Cache#pop()  - Pop latest value
 
-	public Client(NetContext<S> netContext, String address) {
+	public Client(NetContext netContext, String address) {
 		this.netContext = netContext;
 		this.address = address;
 	}
@@ -26,8 +23,8 @@ public class Client<S> implements NetEntity<S> {
 	/**
 	 * @return New local network client neighbor discovery.
 	 */
-	public Discovery<S> createDiscovery() {
-		return new Discovery<>(this);
+	public Discovery createDiscovery() {
+		return new Discovery(this);
 	}
 
 	/**
@@ -49,7 +46,7 @@ public class Client<S> implements NetEntity<S> {
 	}
 
 	@Override
-	public NetContext<S> getNetContext() {
+	public NetContext getNetContext() {
 		return netContext;
 	}
 }
