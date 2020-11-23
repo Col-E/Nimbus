@@ -19,7 +19,7 @@ public class DiscoveryTests {
 		CountDownLatch lock = new CountDownLatch(1);
 		synchronized (lock) {
 			Client selfClient = ctx.createClient();
-			Client otherClient = new Client(ctx, "111.111.111.111");
+			Client otherClient = new Client(ctx, new NimbusID(new byte[]{10, 10, 10, 10}, 0));
 			// Setup discovery:
 			//  - Normal client (self)
 			//  - Mock client (random address)
@@ -27,7 +27,7 @@ public class DiscoveryTests {
 			Discovery discoverySelf = Mockito.spy(selfClient.createDiscovery());
 			Discovery discoveryOther = otherClient.createDiscovery();
 			discoverySelf.setOnDiscover(c -> {
-				if (c.getAddress().equals(otherClient.getAddress())) {
+				if (c.getIdentifier().equals(otherClient.getIdentifier())) {
 					visited.set(true);
 					lock.countDown();
 				}

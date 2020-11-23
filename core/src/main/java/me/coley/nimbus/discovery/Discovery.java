@@ -3,6 +3,7 @@ package me.coley.nimbus.discovery;
 import me.coley.nimbus.Client;
 import me.coley.nimbus.Nimbus;
 import me.coley.nimbus.NimbusEntity;
+import me.coley.nimbus.NimbusID;
 import me.coley.nimbus.util.Log;
 import org.slf4j.Logger;
 
@@ -11,11 +12,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -26,12 +27,13 @@ import java.util.function.Consumer;
 public class Discovery implements NimbusEntity {
 	private static final String DEFAULT_MULTICAST_ADDRESS = "239.78.73.77";
 	private static final int DEFAULT_MULTICAST_PORT = 6677;
+	private static final long DEFAULT_DISCOVER_INTERVAL_MS = 1000;
 	private static final byte[] DISCOVER_DATA_MATCH = {0x4E, 0x49, 0x4D, 0x42};
-	private static final long DISCOVER_INTERVAL_MS = 5_000;
 	private static final Logger logger = Log.NETWORKING;
 	private final ExecutorService service = Executors.newFixedThreadPool(2);
 	private final Nimbus nimbus;
 	private final Client client;
+	private long discoverIntervalMs = DEFAULT_DISCOVER_INTERVAL_MS;
 	private String multicastAddress = DEFAULT_MULTICAST_ADDRESS;
 	private int multicastPort = DEFAULT_MULTICAST_PORT;
 	private Future<?> discoveryFuture;
@@ -55,6 +57,31 @@ public class Discovery implements NimbusEntity {
 	 */
 	public void setOnDiscover(Consumer<Client> onDiscover) {
 		this.onDiscover = onDiscover;
+	}
+
+	/**
+	 * @return Discovery broadcast interval, in milliseconds.
+	 */
+	public long getDiscoverIntervalMs() {
+		return discoverIntervalMs;
+	}
+
+	/**
+	 * @param interval
+	 * 		Discovery broadcast interval, in milliseconds.
+	 */
+	public void setDiscoverIntervalMs(long interval) {
+		this.discoverIntervalMs = interval;
+	}
+
+	/**
+	 * @param interval
+	 * 		Discovery broadcast interval.
+	 * @param sourceUnit
+	 * 		Time unit of given interval.
+	 */
+	public void setDiscoverInterval(long interval, TimeUnit sourceUnit) {
+		setDiscoverIntervalMs(TimeUnit.MILLISECONDS.convert(interval, sourceUnit));
 	}
 
 	/**
@@ -118,14 +145,15 @@ public class Discovery implements NimbusEntity {
 	 */
 	@SuppressWarnings({"BusyWait", "InfiniteLoopStatement"})
 	private void announce() {
-		// TODO: Allow distinguish between clients running on the same machine (Net > App)
-		// TODO: Where to include data-type pub-sub matches between clients?
-		// Create message:
-		//  - Header  (u4)
-		//  - Address (uX)
+		byte[] idSerial = nimbus.getSerialization().serializeObject(client.getIdentifier());
+		// Create message
 		ByteBuffer buffer = ByteBuffer.allocate(256);
 		buffer.put(DISCOVER_DATA_MATCH);
-		buffer.put(client.getAddress().getBytes(StandardCharsets.UTF_8));
+		buffer.putShort((byte) idSerial.length);
+		buffer.put(idSerial);
+		// TODO: Include pub-sub data for matches between clients
+		// buffer.putShort((short) pubsubSerial.length);
+		// buffer.put(pubsubSerial);
 		byte[] multicastMessage = buffer.array();
 		// Setup socket
 		try (DatagramSocket socket = new DatagramSocket()) {
@@ -135,7 +163,7 @@ public class Discovery implements NimbusEntity {
 				DatagramPacket packet = new DatagramPacket(multicastMessage, multicastMessage.length, group, multicastPort);
 				socket.send(packet);
 				logger.debug("Sent discovery announce to {}:{}", multicastAddress, multicastPort);
-				Thread.sleep(DISCOVER_INTERVAL_MS);
+				Thread.sleep(discoverIntervalMs);
 			}
 		} catch (Exception ex) {
 			logger.error("Error in discovery routine: " + multicastAddress + ":" + multicastPort, ex);
@@ -162,35 +190,26 @@ public class Discovery implements NimbusEntity {
 				if (!Arrays.equals(DISCOVER_DATA_MATCH, Arrays.copyOf(received, DISCOVER_DATA_MATCH.length))) {
 					continue;
 				}
-				// Get remaining data after prefix
-				byte[] data = Arrays.copyOfRange(received, DISCOVER_DATA_MATCH.length, received.length);
-				String clientAddress = new String(data).trim();
+				// Get nimbus identifier
+				int idLength = (received[DISCOVER_DATA_MATCH.length] << 8) + (received[DISCOVER_DATA_MATCH.length + 1]);
+				int startIndex = DISCOVER_DATA_MATCH.length + 2; // Offset header array + length U2
+				int endIndex = startIndex + idLength;
+				byte[] data = Arrays.copyOfRange(received, startIndex, endIndex);
+				NimbusID id = nimbus.getSerialization().deserializeObject(data, NimbusID.class);
 				// Ignore self in discovery
-				if (isSelf(clientAddress)) {
-					logger.debug("Ignoring self in discovery {}", clientAddress);
+				if (client.getIdentifier().equals(id)) {
+					logger.debug("Ignoring self in discovery {}", id);
 					continue;
 				}
-				logger.debug("Found new client via discovery {}", clientAddress);
+				logger.debug("Found new client via discovery {}", id);
 				// Notify listeners of new client's existence
 				if (onDiscover != null) {
-					onDiscover.accept(new Client(nimbus, clientAddress));
+					onDiscover.accept(new Client(nimbus, id));
 				}
 			}
 		} catch (Exception ex) {
 			logger.error("Error in discovery routine: " + multicastAddress + ":" + multicastPort, ex);
 		}
-	}
-
-	/**
-	 * Check if a given address represents ourselves.
-	 *
-	 * @param clientAddress
-	 * 		Some address from a discovered client.
-	 *
-	 * @return {@code true} when matching the client stored in the discover instance.
-	 */
-	public boolean isSelf(String clientAddress) {
-		return client.getAddress().equals(clientAddress);
 	}
 
 	@Override

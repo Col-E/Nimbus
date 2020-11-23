@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import me.coley.nimbus.NimbusID;
 
 import java.io.ByteArrayOutputStream;
 
@@ -21,6 +22,28 @@ public class Serialization {
 	public Serialization() {
 		// Have kryo automatically register types for us
 		kryo.setRegistrationRequired(false);
+		registerInternalTypes();
+	}
+
+	private void registerInternalTypes() {
+		kryo.addDefaultSerializer(NimbusID.class, new Serializer<NimbusID>() {
+			@Override
+			public void write(Kryo kryo, Output output, NimbusID object) {
+				output.writeByte(object.getNetworkAddress().length);
+				output.writeBytes(object.getNetworkAddress());
+				output.writeInt(object.getApplicationId());
+			}
+
+			@Override
+			@SuppressWarnings("ResultOfMethodCallIgnored")
+			public NimbusID read(Kryo kryo, Input input, Class<? extends NimbusID> type) {
+				int len = input.readByte();
+				byte[] address = new byte[len];
+				input.read(address);
+				int id = input.readInt();
+				return new NimbusID(address, id);
+			}
+		});
 	}
 
 	/**

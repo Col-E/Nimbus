@@ -9,15 +9,15 @@ import me.coley.nimbus.discovery.Discovery;
  */
 public class Client implements NimbusEntity {
 	private final Nimbus nimbus;
-	private final String address;
+	private final NimbusID identifier;
 	// TODO: Publish-Subscribe with cache
 	//  Cache Reading
 	//  - Cache#peek() - Peek latest value
 	//  - Cache#pop()  - Pop latest value
 
-	public Client(Nimbus nimbus, String address) {
+	public Client(Nimbus nimbus, NimbusID identifier) {
 		this.nimbus = nimbus;
-		this.address = address;
+		this.identifier = identifier;
 	}
 
 	/**
@@ -38,11 +38,11 @@ public class Client implements NimbusEntity {
 	}
 
 	/**
-	 * @return The address of the client on the local network.
-	 * Not directly accessible if {@link #isLocal()} is {@code false}.
+	 * @return The parent nimbus instance identifier.
+	 * Allows clients to distinguish between network addresses and application instances.
 	 */
-	public String getAddress() {
-		return address;
+	public NimbusID getIdentifier() {
+		return identifier;
 	}
 
 	@Override
