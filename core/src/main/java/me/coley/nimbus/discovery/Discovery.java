@@ -25,9 +25,11 @@ import java.util.function.Consumer;
  * @author Matt Coley
  */
 public class Discovery implements NimbusEntity {
-	private static final String DEFAULT_MULTICAST_ADDRESS = "239.78.73.77";
-	private static final int DEFAULT_MULTICAST_PORT = 6677;
-	private static final long DEFAULT_DISCOVER_INTERVAL_MS = 1000;
+	// Public constants
+	public static final String DEFAULT_MULTICAST_ADDRESS = "239.78.73.77";
+	public static final int DEFAULT_MULTICAST_PORT = 6677;
+	public static final long DEFAULT_DISCOVER_INTERVAL_MS = 1000;
+	//
 	private static final byte[] DISCOVER_DATA_MATCH = {0x4E, 0x49, 0x4D, 0x42};
 	private static final Logger logger = Log.NETWORKING;
 	private final ExecutorService service = Executors.newFixedThreadPool(2);
@@ -67,11 +69,11 @@ public class Discovery implements NimbusEntity {
 	}
 
 	/**
-	 * @param interval
+	 * @param intervalMs
 	 * 		Discovery broadcast interval, in milliseconds.
 	 */
-	public void setDiscoverIntervalMs(long interval) {
-		this.discoverIntervalMs = interval;
+	public void setDiscoverIntervalMs(long intervalMs) {
+		this.discoverIntervalMs = intervalMs;
 	}
 
 	/**
