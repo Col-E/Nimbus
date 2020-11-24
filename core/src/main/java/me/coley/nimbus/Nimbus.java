@@ -1,10 +1,8 @@
 package me.coley.nimbus;
 
 import me.coley.nimbus.serial.Serialization;
-import me.coley.nimbus.util.NetworkUtils;
 
-import java.net.InetAddress;
-import java.util.Optional;
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -16,6 +14,7 @@ public class Nimbus {
 	private final Serialization serialization = new Serialization();
 	private final NetConfig config;
 	private final NimbusID identity;
+	private HostInfoCache hostCache;
 
 	/**
 	 * Create a new nimbus instance with the default configuration.
@@ -30,17 +29,21 @@ public class Nimbus {
 	 *
 	 * @param config
 	 * 		Config to pull values from.
+	 *
+	 * @throws IllegalStateException
+	 * 		When host address information cannot be fetched to populate {@link #getHostCache()}.
+	 * 		This information is required to populate {@link #getIdentity()}.
 	 */
 	public Nimbus(NetConfig config) {
 		this.config = config;
-		// Setup identifier
-		Optional<InetAddress> host = config.doUseIpv6() ?
-				NetworkUtils.getLocalIPv6Host() : NetworkUtils.getLocalIPv4Host();
-		if (host.isPresent()) {
-			identity = new NimbusID(host.get().getAddress(), new Random().nextInt());
-		} else {
+		// Setup cached information
+		try {
+			refreshHostCache();
+		} catch (IOException e) {
 			throw new IllegalStateException("Could not find local host to configure nimbus identifier with!");
 		}
+		// Setup identifier
+		identity = new NimbusID(getHostCache().getLocalNetworkAddress().getAddress(), Math.abs(new Random().nextInt()));
 	}
 
 	/**
@@ -58,6 +61,23 @@ public class Nimbus {
 	 */
 	public Serialization getSerialization() {
 		return serialization;
+	}
+
+	/**
+	 * @return Cached network host information.
+	 */
+	public HostInfoCache getHostCache() {
+		return hostCache;
+	}
+
+	/**
+	 * Refreshes the cached network host information.
+	 *
+	 * @throws IOException
+	 * 		When the host address information cannot be fetched.
+	 */
+	public void refreshHostCache() throws IOException {
+		this.hostCache = new HostInfoCache(getNetConfig().doUseIpv6());
 	}
 
 	/**

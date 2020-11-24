@@ -51,20 +51,16 @@ public class NimbusID {
 	}
 
 	/**
+	 * @param cache
+	 * 		Cached network information.
 	 * @param other
 	 * 		Some other NimbusID.
 	 *
 	 * @return {@code} true when the other identifier belongs to an instance on the same network.
 	 */
-	public boolean isOnSameNetwork(NimbusID other) {
-		try {
-			// TODO: This call is REALLY expensive... Caching this information would be nice BUT:
-			//  - What if the user's network settings change? We don't want the cached value to be out of date.
-			int subnetPrefix = NetworkUtils.getLocalSubnet(isNetworkAddressIPv6()).getNetworkPrefixLength();
-			return NetworkUtils.onSameNetwork(networkAddress, other.getNetworkAddress(), subnetPrefix);
-		} catch (IOException ex) {
-			return false;
-		}
+	public boolean isOnSameNetwork(HostInfoCache cache, NimbusID other) {
+		int subnetPrefix = cache.getLocalSubnetAddress().getNetworkPrefixLength();
+		return NetworkUtils.onSameNetwork(networkAddress, other.getNetworkAddress(), subnetPrefix);
 	}
 
 	@Override
