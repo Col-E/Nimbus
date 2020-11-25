@@ -167,6 +167,8 @@ public class Discovery implements NimbusEntity {
 				logger.debug("Sent discovery announce to {}:{}", multicastAddress, multicastPort);
 				Thread.sleep(discoverIntervalMs);
 			}
+		} catch (InterruptedException ignored) {
+			// ignore sleep interruption when we terminate the thread.
 		} catch (Exception ex) {
 			logger.error("Error in discovery routine: " + multicastAddress + ":" + multicastPort, ex);
 		}
