@@ -1,5 +1,7 @@
 package me.coley.nimbus;
 
+import me.coley.nimbus.config.NetConfig;
+import me.coley.nimbus.config.SerialConfig;
 import me.coley.nimbus.serial.Serialization;
 
 import java.io.IOException;
@@ -11,8 +13,9 @@ import java.util.Random;
  * @author Matt Coley
  */
 public class Nimbus {
-	private final Serialization serialization = new Serialization();
-	private final NetConfig config;
+	private final Serialization serialization;
+	private final NetConfig configNet;
+	private final SerialConfig configSerial;
 	private final NimbusID identity;
 	private HostInfoCache hostCache;
 
@@ -20,22 +23,27 @@ public class Nimbus {
 	 * Create a new nimbus instance with the default configuration.
 	 */
 	public Nimbus() {
-		this(new NetConfig());
+		this(new NetConfig(), new SerialConfig());
 	}
 
 	/**
 	 * Create a new nimbus instance with the given configuration.
 	 * The {@link #getIdentity() nimbus identity} will be generated based on the {@link NetConfig#doUseIpv6()} value.
 	 *
-	 * @param config
-	 * 		Config to pull values from.
+	 * @param configNet
+	 * 		Network config to pull values from.
+	 * @param configSerial
+	 * 		Serialization config to pull values from.
 	 *
 	 * @throws IllegalStateException
 	 * 		When host address information cannot be fetched to populate {@link #getHostCache()}.
 	 * 		This information is required to populate {@link #getIdentity()}.
 	 */
-	public Nimbus(NetConfig config) {
-		this.config = config;
+	public Nimbus(NetConfig configNet, SerialConfig configSerial) {
+		this.configNet = configNet;
+		this.configSerial = configSerial;
+		// Setup serialization
+		serialization = new Serialization(configSerial);
 		// Setup cached information
 		try {
 			refreshHostCache();
@@ -84,7 +92,14 @@ public class Nimbus {
 	 * @return Network config.
 	 */
 	public NetConfig getNetConfig() {
-		return config;
+		return configNet;
+	}
+
+	/**
+	 * @return Serialization config.
+	 */
+	public SerialConfig getSerialConfig() {
+		return configSerial;
 	}
 
 	/**

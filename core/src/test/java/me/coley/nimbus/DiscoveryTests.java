@@ -14,16 +14,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static me.coley.nimbus.discovery.Discovery.*;
 
 public class DiscoveryTests {
-	private final Nimbus ctx = new Nimbus();
+	private final Nimbus nimbus = new Nimbus();
 
-	@ParameterizedTest()
+	@ParameterizedTest
 	@MethodSource(value = "provideConfig")
 	void test(DiscoveryConfig config) throws Exception {
 		AtomicBoolean visited = new AtomicBoolean();
 		CountDownLatch lock = new CountDownLatch(1);
 		synchronized (lock) {
-			Client selfClient = ctx.createClient();
-			Client otherClient = new Client(ctx, new NimbusID(new byte[]{10, 10, 10, 10}, 0));
+			Client selfClient = nimbus.createClient();
+			Client otherClient = new Client(nimbus, new NimbusID(new byte[]{10, 10, 10, 10}, 0));
 			// Setup discovery:
 			//  - Normal client (self)
 			//  - Mock client (random address)

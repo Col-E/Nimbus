@@ -1,42 +1,27 @@
 package me.coley.nimbus;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import me.coley.nimbus.config.NetConfig;
+import me.coley.nimbus.config.SerialConfig;
 import me.coley.nimbus.stuff.ConnectionType;
+import me.coley.nimbus.stuff.IndexOrderedServerPacket;
 import me.coley.nimbus.stuff.ListWrapper;
 import me.coley.nimbus.stuff.ServerPacket;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.RepeatedTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SerializationTests {
-	private final Nimbus ctx = new Nimbus();
+	private Nimbus nimbus;
 
 	@BeforeEach
 	void setupCustomTypeSerial() {
-		ctx.getSerialization().addTypeConverter(ServerPacket.class, new Serializer<ServerPacket>() {
-			@Override
-			public void write(Kryo kryo, Output output, ServerPacket object) {
-				output.writeByte(object.getType().ordinal());
-				output.writeString(object.getIp());
-				output.writeInt(object.getPort());
-			}
-
-			@Override
-			public ServerPacket read(Kryo kryo, Input input, Class<? extends ServerPacket> type) {
-				int ordinal = input.readByte();
-				String ip = input.readString();
-				int port = input.readInt();
-				ConnectionType connectionType = ConnectionType.values()[ordinal];
-				return new ServerPacket(connectionType, ip, port);
-			}
-		});
+		nimbus = new Nimbus();
 	}
 
-	@Test
+	@RepeatedTest(10)
 	void testConcreteType() {
 		// Do serial/deserial of the type, given a few different instances
 		ServerPacket[] packets = new ServerPacket[]{
@@ -45,13 +30,13 @@ public class SerializationTests {
 				new ServerPacket(ConnectionType.FTP, "127.0.0.1", 21)
 		};
 		for (ServerPacket original : packets) {
-			byte[] serialized = ctx.getSerialization().serializeObject(original);
-			ServerPacket deserialized = ctx.getSerialization().deserializeObject(serialized, ServerPacket.class);
+			byte[] serialized = nimbus.getSerialization().serializeObject(original);
+			ServerPacket deserialized = nimbus.getSerialization().deserializeObject(serialized, ServerPacket.class);
 			assertEquals(original, deserialized);
 		}
 	}
 
-	@Test
+	@RepeatedTest(10)
 	@SuppressWarnings("unchecked")
 	void testGenericLists() {
 		ListWrapper<String> strings = new ListWrapper<>();
@@ -64,16 +49,50 @@ public class SerializationTests {
 				new ServerPacket(ConnectionType.FTP, "buzz", 5),
 				new ServerPacket(ConnectionType.FTP, "fizzbuzz", 15));
 		// Deserialize string list
-		byte[] serializedStrings = ctx.getSerialization().serializeObject(strings);
-		ListWrapper<String> deserializedStrings = ctx.getSerialization().deserializeObject(serializedStrings, ListWrapper.class);
+		byte[] serializedStrings = nimbus.getSerialization().serializeObject(strings);
+		ListWrapper<String> deserializedStrings = nimbus.getSerialization().deserializeObject(serializedStrings, ListWrapper.class);
 		assertEquals(strings, deserializedStrings);
 		// Deserialize int list
-		byte[] serializedInts = ctx.getSerialization().serializeObject(ints);
-		ListWrapper<Integer> deserializedInts = ctx.getSerialization().deserializeObject(serializedInts, ListWrapper.class);
+		byte[] serializedInts = nimbus.getSerialization().serializeObject(ints);
+		ListWrapper<Integer> deserializedInts = nimbus.getSerialization().deserializeObject(serializedInts, ListWrapper.class);
 		assertEquals(ints, deserializedInts);
 		// Deserialize packet list
-		byte[] serializedPackets = ctx.getSerialization().serializeObject(packets);
-		ListWrapper<ServerPacket> deserializedPackets = ctx.getSerialization().deserializeObject(serializedPackets, ListWrapper.class);
+		byte[] serializedPackets = nimbus.getSerialization().serializeObject(packets);
+		ListWrapper<ServerPacket> deserializedPackets = nimbus.getSerialization().deserializeObject(serializedPackets, ListWrapper.class);
 		assertEquals(packets, deserializedPackets);
+	}
+
+	@Nested
+	class IndexOrdering {
+		@BeforeEach
+		void setupCustomTypeSerial() {
+			SerialConfig serialConfig = new SerialConfig();
+			serialConfig.setUseAnnotatedIndices(true);
+			nimbus = new Nimbus(new NetConfig(), serialConfig);
+		}
+
+		@RepeatedTest(10)
+		void testIndexedOrdering() {
+			ConnectionType type = ConnectionType.SSH;
+			String addr = "localhost";
+			int port = 25565;
+			ServerPacket standard = new ServerPacket(type, addr, port);
+			IndexOrderedServerPacket indexed = new IndexOrderedServerPacket(type, addr, port);
+			// Serialize
+			byte[] serialized1 = nimbus.getSerialization().serializeObject(standard);
+			byte[] serialized2 = nimbus.getSerialization().serializeObject(indexed);
+			// Assert valid deserial
+			ServerPacket deStandard = nimbus.getSerialization().deserializeObject(serialized1, ServerPacket.class);
+			IndexOrderedServerPacket deIndexed = nimbus.getSerialization().deserializeObject(serialized2, IndexOrderedServerPacket.class);
+			assertEquals(standard, deStandard);
+			assertEquals(indexed, deIndexed);
+			// Different serialized content
+			int len = Math.min(serialized1.length, serialized2.length);
+			for (int i = 0; i < len - 1; i++)
+				if (serialized1[i] != serialized2[i])
+					return;
+			// Fail if same content
+			fail("Serialized arrays were the same despite one supposed to have different order declared by annotations!");
+		}
 	}
 }

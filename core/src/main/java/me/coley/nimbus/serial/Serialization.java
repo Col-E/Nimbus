@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import me.coley.nimbus.NimbusID;
+import me.coley.nimbus.config.SerialConfig;
 
 import java.io.ByteArrayOutputStream;
 
@@ -14,36 +15,27 @@ import java.io.ByteArrayOutputStream;
  * @author Matt Coley
  */
 public class Serialization {
-	private final Kryo kryo = new Kryo();
+	private final Kryo kryo;
 
 	/**
 	 * Create the serialization service.
+	 *
+	 * @param config
+	 * 		Serialization config.
 	 */
-	public Serialization() {
+	public Serialization(SerialConfig config) {
+		kryo = createKryo(config);
 		// Have kryo automatically register types for us
 		kryo.setRegistrationRequired(false);
+		// Register nimbus internal types that need custom serialization
 		registerInternalTypes();
 	}
 
-	private void registerInternalTypes() {
-		kryo.addDefaultSerializer(NimbusID.class, new Serializer<NimbusID>() {
-			@Override
-			public void write(Kryo kryo, Output output, NimbusID object) {
-				output.writeByte(object.getNetworkAddress().length);
-				output.writeBytes(object.getNetworkAddress());
-				output.writeInt(object.getApplicationId());
-			}
-
-			@Override
-			@SuppressWarnings("ResultOfMethodCallIgnored")
-			public NimbusID read(Kryo kryo, Input input, Class<? extends NimbusID> type) {
-				int len = input.readByte();
-				byte[] address = new byte[len];
-				input.read(address);
-				int id = input.readInt();
-				return new NimbusID(address, id);
-			}
-		});
+	/**
+	 * @return Kryo instance backing the serialization.
+	 */
+	public Kryo getKryo() {
+		return kryo;
 	}
 
 	/**
@@ -90,5 +82,40 @@ public class Serialization {
 		kryo.writeObject(output, object);
 		output.close();
 		return baos.toByteArray();
+	}
+
+	private static Kryo createKryo(SerialConfig config) {
+		boolean indexed = config.doUseAnnotatedIndices();
+		return new Kryo() {
+			@Override
+			@SuppressWarnings("rawtypes")
+			protected Serializer newDefaultSerializer(Class type) {
+				if (indexed)
+					return new IndexedFieldSerializer(this, type);
+				else
+					return super.newDefaultSerializer(type);
+			}
+		};
+	}
+
+	private void registerInternalTypes() {
+		kryo.addDefaultSerializer(NimbusID.class, new Serializer<NimbusID>() {
+			@Override
+			public void write(Kryo kryo, Output output, NimbusID object) {
+				output.writeByte(object.getNetworkAddress().length);
+				output.writeBytes(object.getNetworkAddress());
+				output.writeInt(object.getApplicationId());
+			}
+
+			@Override
+			@SuppressWarnings("ResultOfMethodCallIgnored")
+			public NimbusID read(Kryo kryo, Input input, Class<? extends NimbusID> type) {
+				int len = input.readByte();
+				byte[] address = new byte[len];
+				input.read(address);
+				int id = input.readInt();
+				return new NimbusID(address, id);
+			}
+		});
 	}
 }

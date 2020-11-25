@@ -1,3 +1,3 @@
 # Nimbus
 
-A highly configurable networking library for publish-subscribe systems.
+A highly configurable networking framework for publish-subscribe systems.

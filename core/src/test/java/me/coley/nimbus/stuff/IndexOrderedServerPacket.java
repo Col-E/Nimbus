@@ -1,17 +1,28 @@
 package me.coley.nimbus.stuff;
 
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import me.coley.nimbus.serial.Index;
+
 import java.util.Objects;
 
-public class ServerPacket {
+/**
+ * This is the same as {@link ServerPacket} except the fields are annotated so they appear in a specific order.
+ * <br>
+ * By default, {@link FieldSerializer Kyro's field serialization} orders them alphabetically.
+ */
+public class IndexOrderedServerPacket {
+	@Index(1)
 	private final ConnectionType type;
+	@Index(2)
 	private final String ip;
+	@Index(3)
 	private final int port;
 
-	public ServerPacket() {
+	public IndexOrderedServerPacket() {
 		this(null, null, -1);
 	}
 
-	public ServerPacket(ConnectionType type, String ip, int port) {
+	public IndexOrderedServerPacket(ConnectionType type, String ip, int port) {
 		this.type = type;
 		this.ip = ip;
 		this.port = port;
@@ -33,7 +44,7 @@ public class ServerPacket {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		ServerPacket that = (ServerPacket) o;
+		IndexOrderedServerPacket that = (IndexOrderedServerPacket) o;
 		return port == that.port &&
 				Objects.equals(ip, that.ip);
 	}
