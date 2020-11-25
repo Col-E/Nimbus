@@ -6,6 +6,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import me.coley.nimbus.NimbusID;
 import me.coley.nimbus.config.SerialConfig;
+import org.objenesis.Objenesis;
+import org.objenesis.ObjenesisStd;
 
 import java.io.ByteArrayOutputStream;
 
@@ -15,6 +17,7 @@ import java.io.ByteArrayOutputStream;
  * @author Matt Coley
  */
 public class Serialization {
+	private final Objenesis objenesis = new ObjenesisStd();
 	private final Kryo kryo;
 
 	/**
@@ -25,8 +28,6 @@ public class Serialization {
 	 */
 	public Serialization(SerialConfig config) {
 		kryo = createKryo(config);
-		// Have kryo automatically register types for us
-		kryo.setRegistrationRequired(false);
 		// Register nimbus internal types that need custom serialization
 		registerInternalTypes();
 	}
@@ -36,6 +37,13 @@ public class Serialization {
 	 */
 	public Kryo getKryo() {
 		return kryo;
+	}
+
+	/**
+	 * @return Objenesis instance to support generating type instances when no-argument constructors are not present.
+	 */
+	public Objenesis getObjenesis() {
+		return objenesis;
 	}
 
 	/**
@@ -84,9 +92,9 @@ public class Serialization {
 		return baos.toByteArray();
 	}
 
-	private static Kryo createKryo(SerialConfig config) {
+	private Kryo createKryo(SerialConfig config) {
 		boolean indexed = config.doUseAnnotatedIndices();
-		return new Kryo() {
+		Kryo kryo = new Kryo() {
 			@Override
 			@SuppressWarnings("rawtypes")
 			protected Serializer newDefaultSerializer(Class type) {
@@ -96,8 +104,18 @@ public class Serialization {
 					return super.newDefaultSerializer(type);
 			}
 		};
+		// Allow data types
+		if (config.doBypassConstructor())
+			kryo.setInstantiatorStrategy(objenesis::getInstantiatorOf);
+		// Have kryo automatically register types for us
+		kryo.setRegistrationRequired(false);
+		return kryo;
 	}
 
+	/**
+	 * While not necessary by default since {@link SerialConfig#doBypassConstructor()} is {@code true},
+	 * it is necessary to specify these serializers for when it manually set to {@code false}.
+	 */
 	private void registerInternalTypes() {
 		kryo.addDefaultSerializer(NimbusID.class, new Serializer<NimbusID>() {
 			@Override

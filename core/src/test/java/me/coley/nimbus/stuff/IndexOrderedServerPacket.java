@@ -10,6 +10,7 @@ import java.util.Objects;
  * <br>
  * By default, {@link FieldSerializer Kyro's field serialization} orders them alphabetically.
  */
+@SuppressWarnings("unused")
 public class IndexOrderedServerPacket {
 	@Index(1)
 	private final ConnectionType type;
@@ -17,10 +18,6 @@ public class IndexOrderedServerPacket {
 	private final String ip;
 	@Index(3)
 	private final int port;
-
-	public IndexOrderedServerPacket() {
-		this(null, null, -1);
-	}
 
 	public IndexOrderedServerPacket(ConnectionType type, String ip, int port) {
 		this.type = type;

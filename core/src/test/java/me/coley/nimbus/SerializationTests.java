@@ -9,9 +9,10 @@ import me.coley.nimbus.stuff.ServerPacket;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
+// Nimbus instances are allocated in the constructor instead of a BeforeEach because for some reason,
+// that results in MUCH faster test results.
 public class SerializationTests {
 	@Nested
 	class Default {
@@ -63,7 +64,6 @@ public class SerializationTests {
 	class Indexed {
 		private final Nimbus nimbus;
 
-		// This is done inside the constructor because for some reason, that results in MUCH faster test results
 		public Indexed() {
 			SerialConfig serialConfig = new SerialConfig();
 			serialConfig.setUseAnnotatedIndices(true);
@@ -95,5 +95,23 @@ public class SerializationTests {
 		}
 	}
 
-	
+	@Nested
+	class CtorBypassDisabled {
+		private final Nimbus nimbus;
+
+		public CtorBypassDisabled() {
+			SerialConfig serialConfig = new SerialConfig();
+			serialConfig.setBypassConstructor(false);
+			nimbus = new Nimbus(new NetConfig(), serialConfig);
+		}
+
+		@Test
+		void testMissingNoArgFailsToDeserialize() {
+			// ServerPacket does not contain a no-argument constructor...
+			// So deserialization will fail if ctor bypassing is set to false.
+			ServerPacket standard = new ServerPacket(ConnectionType.SSH, "localhost", 25565);
+			byte[] serialized = nimbus.getSerialization().serializeObject(standard);
+			assertThrows(Exception.class, () -> nimbus.getSerialization().deserializeObject(serialized, ServerPacket.class));
+		}
+	}
 }

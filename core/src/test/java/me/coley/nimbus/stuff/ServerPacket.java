@@ -2,14 +2,11 @@ package me.coley.nimbus.stuff;
 
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public class ServerPacket {
 	private final ConnectionType type;
 	private final String ip;
 	private final int port;
-
-	public ServerPacket() {
-		this(null, null, -1);
-	}
 
 	public ServerPacket(ConnectionType type, String ip, int port) {
 		this.type = type;
