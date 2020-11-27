@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  */
 public class Discovery implements NimbusEntity {
 	// Public constants
-	public static final String DEFAULT_MULTICAST_ADDRESS = "239.78.73.77";
+	public static final String DEFAULT_MULTICAST_ADDRESS = "238.78.73.77";
 	public static final int DEFAULT_MULTICAST_PORT = 6677;
 	public static final long DEFAULT_DISCOVER_INTERVAL_MS = 1000;
 	//
