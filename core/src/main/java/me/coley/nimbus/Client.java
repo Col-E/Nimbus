@@ -1,6 +1,7 @@
 package me.coley.nimbus;
 
 import me.coley.nimbus.discovery.Discovery;
+import me.coley.nimbus.discovery.NimbusID;
 
 /**
  * Network participant client.

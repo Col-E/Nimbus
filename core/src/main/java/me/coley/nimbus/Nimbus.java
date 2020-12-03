@@ -2,6 +2,7 @@ package me.coley.nimbus;
 
 import me.coley.nimbus.config.NetConfig;
 import me.coley.nimbus.config.SerialConfig;
+import me.coley.nimbus.discovery.NimbusID;
 import me.coley.nimbus.serial.Serialization;
 
 import java.io.IOException;

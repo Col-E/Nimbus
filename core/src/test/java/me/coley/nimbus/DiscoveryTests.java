@@ -1,6 +1,7 @@
 package me.coley.nimbus;
 
 import me.coley.nimbus.discovery.Discovery;
+import me.coley.nimbus.discovery.NimbusID;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
@@ -50,7 +51,6 @@ public class DiscoveryTests {
 			// Wait until we see the discovered client
 			lock.await(10, TimeUnit.SECONDS);
 			// Cleanup
-			// TODO: Calling stop during the thread sleep causes "InterruptedException: sleep interrupted" Discovery.announce(Discovery.java:141)
 			discoverySelf.stop();
 			discoveryOther.stop();
 		}

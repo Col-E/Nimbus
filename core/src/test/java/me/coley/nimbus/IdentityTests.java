@@ -1,5 +1,6 @@
 package me.coley.nimbus;
 
+import me.coley.nimbus.discovery.NimbusID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

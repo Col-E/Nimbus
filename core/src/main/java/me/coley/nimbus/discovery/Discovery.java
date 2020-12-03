@@ -3,7 +3,6 @@ package me.coley.nimbus.discovery;
 import me.coley.nimbus.Client;
 import me.coley.nimbus.Nimbus;
 import me.coley.nimbus.NimbusEntity;
-import me.coley.nimbus.NimbusID;
 import me.coley.nimbus.util.Log;
 import org.slf4j.Logger;
 

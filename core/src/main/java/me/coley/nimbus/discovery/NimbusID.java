@@ -1,5 +1,6 @@
-package me.coley.nimbus;
+package me.coley.nimbus.discovery;
 
+import me.coley.nimbus.HostInfoCache;
 import me.coley.nimbus.util.NetworkUtils;
 
 import java.net.InetAddress;

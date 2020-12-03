@@ -4,7 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import me.coley.nimbus.NimbusID;
+import me.coley.nimbus.discovery.NimbusID;
 import me.coley.nimbus.config.SerialConfig;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
