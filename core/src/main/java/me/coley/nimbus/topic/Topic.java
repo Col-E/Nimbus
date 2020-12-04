@@ -6,7 +6,6 @@ import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
-import org.jgroups.View;
 
 import java.util.function.Consumer;
 
@@ -24,32 +23,16 @@ public class Topic<T> implements Receiver {
 	private final Class<T> type;
 	private final NimbusIDHeader header;
 	private Consumer<T> listener;
+	// TODO: Cache read and written responses
+	//  - JChannels should handle resending failed messages
+	//  - Can be used to catch up newer JGroup members with old content
 
-	private Topic(Nimbus nimbus, JChannel channel, Class<T> type) {
+	Topic(Nimbus nimbus, JChannel channel, Class<T> type) {
 		this.nimbus = nimbus;
 		this.channel = channel;
 		this.type = type;
 		this.header = new NimbusIDHeader().withId(nimbus.getIdentity());
 		channel.setReceiver(this);
-	}
-
-	/**
-	 * Create a topic.
-	 *
-	 * @param nimbus
-	 * 		Nimbus instance to pull values from.
-	 * @param type
-	 * 		Topic data type.
-	 * @param <T>
-	 * 		Inferred topic data type.
-	 *
-	 * @return Topic instance.
-	 *
-	 * @throws Exception
-	 * 		When the topic cannot be created.
-	 */
-	public static <T> Topic<T> createTopic(Nimbus nimbus, Class<T> type) throws Exception {
-		return new Topic<>(nimbus, new JChannel(), type);
 	}
 
 	@Override

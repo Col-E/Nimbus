@@ -2,6 +2,7 @@ package me.coley.nimbus;
 
 import me.coley.nimbus.discovery.Discovery;
 import me.coley.nimbus.discovery.NimbusID;
+import me.coley.nimbus.topic.TopicManager;
 
 /**
  * Network participant client.
@@ -11,14 +12,20 @@ import me.coley.nimbus.discovery.NimbusID;
 public class Client implements NimbusEntity {
 	private final Nimbus nimbus;
 	private final NimbusID identifier;
-	// TODO: Publish-Subscribe with cache
-	//  Cache Reading
-	//  - Cache#peek() - Peek latest value
-	//  - Cache#pop()  - Pop latest value
+	private final TopicManager topicManager;
 
+	/**
+	 * Create a client.
+	 *
+	 * @param nimbus
+	 * 		Parent nimbus instance.
+	 * @param identifier
+	 * 		Identifier of the nimbus instance.
+	 */
 	public Client(Nimbus nimbus, NimbusID identifier) {
 		this.nimbus = nimbus;
 		this.identifier = identifier;
+		this.topicManager = new TopicManager(this);
 	}
 
 	/**
@@ -26,6 +33,13 @@ public class Client implements NimbusEntity {
 	 */
 	public Discovery createDiscovery() {
 		return new Discovery(this);
+	}
+
+	/**
+	 * @return Tracked topics.
+	 */
+	public TopicManager getTopicManager() {
+		return topicManager;
 	}
 
 	/**

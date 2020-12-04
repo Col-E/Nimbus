@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,26 +18,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TopicTests {
 	private static final NetConfig NET_CONFIG = new NetConfig();
 	private final Nimbus nimbus = new Nimbus(NET_CONFIG, new SerialConfig());
+	private final Client client = nimbus.createClient();
 
 	static {
 		NET_CONFIG.setDoHandleSelfPublishedMessages(true);
 	}
 
 	@Test
-	void test() throws Exception {
-		int count = 10;
+	void testSendingXOrderedPackets() throws Exception {
+		int count = 25;
+		AtomicInteger expected = new AtomicInteger(0);
 		AtomicBoolean visited = new AtomicBoolean();
 		CountDownLatch lock = new CountDownLatch(count);
-		Topic<ServerPacket> topic = Topic.createTopic(nimbus, ServerPacket.class);
+		Topic<ServerPacket> topic = client.getTopicManager().createTopic(ServerPacket.class);
 		synchronized (lock) {
 			topic.setListener(packet -> {
+				// Assert that we see each packet coming in order
+				assertEquals(expected.getAndAdd(1), packet.getPort());
+				// Mark that we have been visited
 				visited.set(true);
 				lock.countDown();
 			});
 			topic.open();
-			// Send messages
+			// Send messages, indicate order of packet sending with the "port" value
 			for (int i = 0; i < count; i++)
-				topic.publish(new ServerPacket(ConnectionType.HTTP, "localhost", 80));
+				topic.publish(new ServerPacket(ConnectionType.HTTP, "localhost", i));
 			// Wait until we see the data
 			lock.await(10, TimeUnit.SECONDS);
 			// Cleanup
