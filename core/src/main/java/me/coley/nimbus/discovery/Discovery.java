@@ -152,8 +152,6 @@ public class Discovery implements NimbusEntity {
 		buffer.put(DISCOVER_DATA_MATCH);
 		buffer.putShort((byte) idSerial.length);
 		buffer.put(idSerial);
-		// TODO: Determine if pub-sub data for matches between clients should be attached here
-		//  - JGroups can handle connection and message distribution by itself, so I don't think this is a necessary bit anymore
 		byte[] multicastMessage = buffer.array();
 		// Setup socket
 		try (DatagramSocket socket = new DatagramSocket()) {

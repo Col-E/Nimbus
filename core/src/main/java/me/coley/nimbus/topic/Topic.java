@@ -45,10 +45,6 @@ public class Topic<T> implements Receiver {
 		if (idHeader.getId().equals(header.getId()) &&
 				!nimbus.getNetConfig().doHandleSelfPublishedMessages())
 			return;
-
-		// TODO: Cache model instead of direct call like below
-		//  - Possibly distributed with: https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
-
 		// Deserialize content
 		byte[] data = msg.getArray();
 		T instance = nimbus.getSerialization().deserializeObject(data, type);
