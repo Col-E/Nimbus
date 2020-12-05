@@ -65,6 +65,7 @@ public class Topic<T> implements Receiver {
 	public void publish(T data) throws Exception {
 		byte[] content = nimbus.getSerialization().serializeObject(data);
 		Message message = new BytesMessage(null, content);
+		// TODO: See message flags that can be supported in NetConfig
 		message.putHeader(NimbusIDHeader.MAGIC_ID, header);
 		channel.send(message);
 	}
@@ -94,6 +95,8 @@ public class Topic<T> implements Receiver {
 	}
 
 	/**
+	 * Sets the listener that will be fed incoming messages of the topic's type.
+	 *
 	 * @param listener
 	 * 		New listener that is used to interact with received data messages.
 	 */

@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * @author Matt Coley
  */
 public class NimbusIDHeader extends Header {
-	public static final short MAGIC_ID = 0x1DE;
+	public static final short MAGIC_ID = 1337;
 	private NimbusID id;
 
 	/**
@@ -68,7 +68,7 @@ public class NimbusIDHeader extends Header {
 	@Override
 	public void readFrom(DataInput in) throws IOException {
 		boolean isIPv6 = in.readBoolean();
-		int addressSize = isIPv6 ? 4 : 16;
+		int addressSize = isIPv6 ? 16 : 4;
 		byte[] address = new byte[addressSize];
 		in.readFully(address);
 		int appId = in.readInt();

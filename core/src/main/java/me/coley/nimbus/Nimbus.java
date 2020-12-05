@@ -3,7 +3,9 @@ package me.coley.nimbus;
 import me.coley.nimbus.config.NetConfig;
 import me.coley.nimbus.config.SerialConfig;
 import me.coley.nimbus.discovery.NimbusID;
+import me.coley.nimbus.discovery.NimbusIDHeader;
 import me.coley.nimbus.serial.Serialization;
+import org.jgroups.conf.ClassConfigurator;
 
 import java.io.IOException;
 import java.util.Random;
@@ -108,5 +110,9 @@ public class Nimbus {
 	 */
 	public NimbusID getIdentity() {
 		return identity;
+	}
+
+	static {
+		ClassConfigurator.add(NimbusIDHeader.MAGIC_ID, NimbusIDHeader.class);
 	}
 }
