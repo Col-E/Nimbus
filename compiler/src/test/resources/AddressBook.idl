@@ -1,0 +1,19 @@
+module book {
+    // Type definitions
+    typedef string ContactId;
+    exception ContactAlreadyExists { ContactId contactId; };
+    exception ContactNotFound { ContactId contactId; };
+    enum Relationship { Family, Friend, Business };
+    // Logical definitions
+    struct Contact {
+        Relationship relationship;
+        string name;
+        string address;
+        string phoneNumber;
+    };
+    // Layout
+    interface ContactManager {
+        Contact findContact(in ContactId contactId) raises(ContactNotFound);
+        Contact createContact(in ContactId contactId) raises(ContactNotFound);
+    };
+};
