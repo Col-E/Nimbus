@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class CompilerTests {
-	private static final int NUM_CLASSES = 5;
+	private static final int NUM_CLASSES = 6;
 
 	@Test
 	void test() {

@@ -1,26 +1,27 @@
 package me.coley.nimbus.compiler.model;
 
 /**
- * Tracking general field information to assist {@link ClassModel}.
+ * Parameter information.
  *
  * @author Matt Coley
+ * @see MethodModel
  */
-public class FieldModel extends MemberModel {
+public class ParameterModel extends MemberModel {
 	private final String type;
 
 	/**
 	 * @param name
-	 * 		Field name
+	 * 		Parameter name.
 	 * @param type
-	 * 		Field type.
+	 * 		Parameter type.
 	 */
-	public FieldModel(String name, String type) {
+	public ParameterModel(String name, String type) {
 		super(name);
 		this.type = type;
 	}
 
 	/**
-	 * @return Field type.
+	 * @return Parameter type.
 	 */
 	public String getType() {
 		return type;

@@ -7,7 +7,7 @@ module book {
     // Logical definitions
     struct Contact {
         Relationship relationship;
-        string name;
+        ContactId name;
         string address;
         string phoneNumber;
     };
@@ -16,4 +16,6 @@ module book {
         Contact findContact(in ContactId contactId) raises(ContactNotFound);
         Contact createContact(in ContactId contactId) raises(ContactNotFound);
     };
+    // Inheritance
+    interface ExtendedManager : ContactManager {};
 };
