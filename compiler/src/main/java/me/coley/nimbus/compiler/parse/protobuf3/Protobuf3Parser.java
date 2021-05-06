@@ -1,4 +1,4 @@
-package me.coley.nimbus.compiler.protobuf3;// Generated from Protobuf3.g4 by ANTLR 4.9
+package me.coley.nimbus.compiler.parse.protobuf3;// Generated from Protobuf3.g4 by ANTLR 4.9
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;

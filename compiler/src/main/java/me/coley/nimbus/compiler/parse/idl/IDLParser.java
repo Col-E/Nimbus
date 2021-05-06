@@ -1,4 +1,4 @@
-package me.coley.nimbus.compiler.idl;// Generated from IDL.g4 by ANTLR 4.9
+package me.coley.nimbus.compiler.parse.idl;// Generated from IDL.g4 by ANTLR 4.9
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
