@@ -9,10 +9,18 @@ public class Scope {
 		this.name = name;
 	}
 
+	public ScopeType getType() {
+		return type;
+	}
+
+	public String getName() {
+		return name;
+	}
+
 	public String getPathSeparator() {
 		switch (type) {
 			case PACKAGE:
-				return "/";
+				return ".";
 			case CLASS:
 				return "$";
 			default:

@@ -15,12 +15,15 @@ public class ClassModel {
 	private final List<String> interfaces = new ArrayList<>();
 	private final List<FieldModel> fields = new ArrayList<>();
 	private final List<MethodModel> methods = new ArrayList<>();
+	private final List<ClassModel> innerClasses = new ArrayList<>();
 	private final Stack<Scope> scope;
 	private final String name;
 	private final Type type;
 	private String superName;
 
 	/**
+	 * @param type
+	 * 		Type of IDL class.
 	 * @param scope
 	 * 		Class scope, including packages and outer class identifiers.
 	 * @param name
@@ -41,6 +44,7 @@ public class ClassModel {
 
 	/**
 	 * @return Extended class name.
+	 * May be {@code null}.
 	 */
 	public String getSuperName() {
 		return superName;
@@ -94,6 +98,13 @@ public class ClassModel {
 	 */
 	public List<MethodModel> getMethods() {
 		return methods;
+	}
+
+	/**
+	 * @return Inner class models.
+	 */
+	public List<ClassModel> getInnerClasses() {
+		return innerClasses;
 	}
 
 	/**
