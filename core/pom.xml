@@ -12,12 +12,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <dependencies>
-        <dependency>
-            <groupId>org.jgroups</groupId>
-            <artifactId>jgroups</artifactId>
-            <version>5.1.2.Final</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.jgroups/jgroups -->
         <dependency>
             <groupId>org.jgroups</groupId>
@@ -38,27 +32,4 @@
             <version>5.0.0</version>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <!-- Allowing Java 8 bundling of JGroups -->
-            <plugin>
-                <groupId>me.coley</groupId>
-                <artifactId>class-version-patcher-plugin</artifactId>
-                <version>1.0.0</version>
-                <configuration>
-                    <targetVersion>8</targetVersion>
-                    <artifacts>
-                        <param>org.jgroups:jgroups</param>
-                    </artifacts>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>ClassVersionPatcher</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
