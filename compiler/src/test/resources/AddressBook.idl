@@ -3,7 +3,7 @@ module book {
     typedef string ContactId;
     exception ContactAlreadyExists { ContactId contactId; };
     exception ContactNotFound { ContactId contactId; };
-    enum Relationship { Family, Friend, Business };
+    enum Relationship { FAMILY, FRIEND, BUSINESS };
     // Logical definitions
     struct Contact {
         Relationship relationship;
@@ -12,10 +12,12 @@ module book {
         string phoneNumber;
     };
     // Layout
-    interface ContactManager {
-        Contact findContact(in ContactId contactId) raises(ContactNotFound);
-        Contact createContact(in ContactId contactId) raises(ContactNotFound);
+    module layout {
+        interface ContactManager {
+            Contact findContact(in ContactId contactId) raises(ContactNotFound);
+            Contact createContact(in ContactId contactId) raises(ContactNotFound);
+        };
+        // Inheritance
+        interface ExtendedManager : ContactManager {};
     };
-    // Inheritance
-    interface ExtendedManager : ContactManager {};
 };

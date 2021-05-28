@@ -107,6 +107,11 @@ public class ClassModel {
 		return innerClasses;
 	}
 
+	@Override
+	public String toString() {
+		return name;
+	}
+
 	/**
 	 * Model type.
 	 *
