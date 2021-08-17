@@ -45,8 +45,7 @@ import java.util.Stack;
 public class IDLSourcesBuilder extends IDLBaseListener implements SourcesBuilder {
 	// TODO: Change to the following
 	//  1. Intercept root, find type aliases and record into map
-	//  2. Intercept class definitions
-	//     - Scan for declared members (visitor pattern in this flat structure is confusing)
+	//     - Makes sure type-aliases are populated first
 	private final Stack<Scope> scopeStack = new Stack<>();
 	private final Stack<ClassModel> tempClassStack = new Stack<>();
 	private final List<ClassModel> generatedClasses = new ArrayList<>();
