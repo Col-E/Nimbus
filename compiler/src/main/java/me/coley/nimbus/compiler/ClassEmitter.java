@@ -152,14 +152,7 @@ public class ClassEmitter {
 		if (ctorBuilderNoParams != null) {
 			builder.addMethod(ctorBuilderNoParams.build());
 		}
-		// Methods
-		if (copy != null) {
-			String args = model.getFields().stream()
-					.map(MemberModel::getName)
-					.collect(Collectors.joining(", "));
-			copy.addStatement("return new $L($L)", className, args);
-			builder.addMethod(copy.build());
-		}
+		// Getters / setters
 		for (MethodModel method : model.getMethods()) {
 			String methodRetType = method.getReturnType();
 			String methodName = method.getName();
@@ -178,6 +171,13 @@ public class ClassEmitter {
 			builder.addMethod(methodSpec);
 		}
 		// Special methods
+		if (copy != null) {
+			String args = model.getFields().stream()
+					.map(MemberModel::getName)
+					.collect(Collectors.joining(", "));
+			copy.addStatement("return new $L($L)", className, args);
+			builder.addMethod(copy.build());
+		}
 		if (classType == Type.DATA && !model.getFields().isEmpty()) {
 			// Equality
 			MethodSpec.Builder equals = MethodSpec.methodBuilder("equals");
