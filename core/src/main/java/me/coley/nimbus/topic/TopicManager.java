@@ -106,11 +106,12 @@ public class TopicManager {
 		if (topic != null)
 			return topic;
 		// Create and update maps
-		topic = new Topic<>(client.getNimbus(), new JChannel(), topicType);
+		JChannel channel = new JChannel();
+		channel.setName(topicType.getName());
+		topic = new Topic<>(client.getNimbus(), channel, topicType);
 		String name = topicType.getName();
 		topicTypes.put(name, topicType);
 		topics.put(name, topic);
-		// TODO: Check if users want to automatically open topics
 		return topic;
 	}
 }

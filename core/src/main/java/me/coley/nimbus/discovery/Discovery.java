@@ -3,8 +3,8 @@ package me.coley.nimbus.discovery;
 import me.coley.nimbus.Client;
 import me.coley.nimbus.Nimbus;
 import me.coley.nimbus.NimbusEntity;
-import me.coley.nimbus.util.Log;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -30,7 +30,7 @@ public class Discovery implements NimbusEntity {
 	public static final long DEFAULT_DISCOVER_INTERVAL_MS = 1000;
 	//
 	private static final byte[] DISCOVER_DATA_MATCH = {0x4E, 0x49, 0x4D, 0x42};
-	private static final Logger logger = Log.NETWORKING;
+	private static final Logger logger = LoggerFactory.getLogger(Discovery.class);
 	private final ExecutorService service = Executors.newFixedThreadPool(2);
 	private final Nimbus nimbus;
 	private final Client client;
@@ -123,8 +123,9 @@ public class Discovery implements NimbusEntity {
 	 */
 	public void start() {
 		// Check if already running
-		if (discoveryFuture != null || announceFuture != null)
+		if (discoveryFuture != null || announceFuture != null) {
 			throw new IllegalStateException("Discovery thread already running!");
+		}
 		// Create new thread
 		discoveryFuture = service.submit(this::discover);
 		announceFuture = service.submit(this::announce);
@@ -135,10 +136,12 @@ public class Discovery implements NimbusEntity {
 	 */
 	public void stop() {
 		// Kill the old thread if it exists
-		if (discoveryFuture != null)
+		if (discoveryFuture != null) {
 			discoveryFuture.cancel(true);
-		if (announceFuture != null)
+		}
+		if (announceFuture != null) {
 			announceFuture.cancel(true);
+		}
 	}
 
 	/**
@@ -154,18 +157,18 @@ public class Discovery implements NimbusEntity {
 		buffer.put(idSerial);
 		byte[] multicastMessage = buffer.array();
 		// Setup socket
-		try (DatagramSocket socket = new DatagramSocket()) {
+		try(DatagramSocket socket = new DatagramSocket()) {
 			InetAddress group = InetAddress.getByName(multicastAddress);
 			// Write loop, announce self on interval
-			while (true) {
+			while(true) {
 				DatagramPacket packet = new DatagramPacket(multicastMessage, multicastMessage.length, group, multicastPort);
 				socket.send(packet);
 				logger.debug("Sent discovery announce to {}:{}", multicastAddress, multicastPort);
 				Thread.sleep(discoverIntervalMs);
 			}
-		} catch (InterruptedException ignored) {
+		} catch(InterruptedException ignored) {
 			// ignore sleep interruption when we terminate the thread.
-		} catch (Exception ex) {
+		} catch(Exception ex) {
 			logger.error("Error in discovery routine: " + multicastAddress + ":" + multicastPort, ex);
 		}
 	}
@@ -176,13 +179,13 @@ public class Discovery implements NimbusEntity {
 	@SuppressWarnings("InfiniteLoopStatement")
 	private void discover() {
 		// Setup socket
-		try (MulticastSocket socket = new MulticastSocket(multicastPort)) {
+		try(MulticastSocket socket = new MulticastSocket(multicastPort)) {
 			InetAddress group = InetAddress.getByName(multicastAddress);
 			socket.joinGroup(group);
 			// Read loop, look for packets matching a given prefix and read data from the remaining data
 			// to describe client lookup information.
 			byte[] buf = new byte[256];
-			while (true) {
+			while(true) {
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
 				byte[] received = packet.getData();
@@ -207,7 +210,7 @@ public class Discovery implements NimbusEntity {
 					onDiscover.accept(new Client(nimbus, id));
 				}
 			}
-		} catch (Exception ex) {
+		} catch(Exception ex) {
 			logger.error("Error in discovery routine: " + multicastAddress + ":" + multicastPort, ex);
 		}
 	}

@@ -1,6 +1,7 @@
 package me.coley.nimbus.util;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -22,7 +23,7 @@ import java.util.Optional;
  * @author Matt Coley
  */
 public class NetworkUtils {
-	private static final Logger logger = Log.NETWORKING;
+	private static final Logger logger = LoggerFactory.getLogger(NetworkUtils.class);
 
 	/**
 	 * @return Local IPv4 host address, if it could be found.
@@ -36,7 +37,7 @@ public class NetworkUtils {
 					break;
 				}
 			}
-		} catch (IOException ex) {
+		} catch(IOException ex) {
 			logger.error("Failed to get local IPv4 host address", ex);
 		}
 		return Optional.ofNullable(address);
@@ -54,7 +55,7 @@ public class NetworkUtils {
 					break;
 				}
 			}
-		} catch (IOException ex) {
+		} catch(IOException ex) {
 			logger.error("Failed to get local IPv6 host address", ex);
 		}
 		return Optional.ofNullable(address);
@@ -69,8 +70,9 @@ public class NetworkUtils {
 	public static Collection<InetAddress> getNetAddresses() throws SocketException {
 		List<InetAddress> addresses = new ArrayList<>();
 		for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-			if (!networkInterface.isUp() || networkInterface.isVirtual() || networkInterface.isLoopback())
+			if (!networkInterface.isUp() || networkInterface.isVirtual() || networkInterface.isLoopback()) {
 				continue;
+			}
 			addresses.addAll(Collections.list(networkInterface.getInetAddresses()));
 		}
 		return addresses;
@@ -102,13 +104,14 @@ public class NetworkUtils {
 		try {
 			NetworkInterface networkInterface = NetworkInterface.getByInetAddress(getLocalHost(ipv6));
 			for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
-				if (ipv6 && address.getAddress() instanceof Inet6Address)
+				if (ipv6 && address.getAddress() instanceof Inet6Address) {
 					return address;
-				else if (!ipv6 && address.getAddress() instanceof Inet4Address)
+				} else if (!ipv6 && address.getAddress() instanceof Inet4Address) {
 					return address;
+				}
 			}
 			throw new IOException("Failed to find matching address for localhost subnet (ipv6=" + ipv6 + ")");
-		} catch (IOException ex) {
+		} catch(IOException ex) {
 			throw new IOException("Error occurred looking up localhost subnet (ipv6=" + ipv6 + ")", ex);
 		}
 	}
@@ -126,12 +129,15 @@ public class NetworkUtils {
 	 * @see #getLocalSubnet(boolean)
 	 */
 	public static boolean onSameNetwork(byte[] local, byte[] remote, int subnetPrefix) {
-		if (remote.length != local.length)
+		if (remote.length != local.length) {
 			return false;
+		}
 		int octets = subnetPrefix / 8;
-		for (int i = 0; i < octets; i++)
-			if (remote[i] != local[i])
+		for (int i = 0; i < octets; i++) {
+			if (remote[i] != local[i]) {
 				return false;
+			}
+		}
 		return true;
 	}
 }

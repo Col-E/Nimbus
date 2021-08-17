@@ -1,5 +1,6 @@
 package me.coley.nimbus.discovery;
 
+import me.coley.nimbus.NimbusConsts;
 import org.jgroups.Header;
 
 import java.io.DataInput;
@@ -14,7 +15,7 @@ import java.util.function.Supplier;
  * @author Matt Coley
  */
 public class NimbusIDHeader extends Header {
-	public static final short MAGIC_ID = 1337;
+	public static final short MAGIC_ID = NimbusConsts.HEADER_ID;
 	private NimbusID id;
 
 	/**
@@ -51,7 +52,7 @@ public class NimbusIDHeader extends Header {
 	@Override
 	public int serializedSize() {
 		Objects.requireNonNull(id, "ID must not be null in header!");
-		// 1:Bool  = Is IPv6
+		// 1:Bool  = Is IPv6 (Used to determine array length)
 		// X:Array = Address
 		// 4:Int   = Application ID
 		return 1 + id.getNetworkAddress().length + 4;
