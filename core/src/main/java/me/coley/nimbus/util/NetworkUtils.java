@@ -77,16 +77,13 @@ public class NetworkUtils {
 	}
 
 	/**
-	 * @param ipv6
-	 * 		If returned address should use IPv6.
-	 *
 	 * @return Localhost address.
 	 *
 	 * @throws UnknownHostException
 	 * 		When the local host name could not be resolved into an address.
 	 */
-	public static InetAddress getLocalHost(boolean ipv6) throws UnknownHostException {
-		return ipv6 ? Inet6Address.getLocalHost() : Inet4Address.getLocalHost();
+	public static InetAddress getLocalHost() throws UnknownHostException {
+		return Inet6Address.getLocalHost();
 	}
 
 	/**
@@ -100,7 +97,7 @@ public class NetworkUtils {
 	 */
 	public static InterfaceAddress getLocalSubnet(boolean ipv6) throws IOException {
 		try {
-			NetworkInterface networkInterface = NetworkInterface.getByInetAddress(getLocalHost(ipv6));
+			NetworkInterface networkInterface = NetworkInterface.getByInetAddress(getLocalHost());
 			for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
 				if (ipv6 && address.getAddress() instanceof Inet6Address)
 					return address;

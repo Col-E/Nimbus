@@ -35,7 +35,7 @@ public class HostInfoCache {
 		if (!opt.isPresent())
 			throw new IOException("Failed to find local network host address");
 		localNetworkAddress = opt.get();
-		localhostAddress = getLocalHost(ipv6);
+		localhostAddress = getLocalHost();
 		localSubnetAddress = getLocalSubnet(ipv6);
 	}
 
