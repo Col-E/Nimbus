@@ -78,18 +78,18 @@ public class SerializationTests {
 			ServerPacket standard = new ServerPacket(type, addr, port);
 			IndexOrderedServerPacket indexed = new IndexOrderedServerPacket(type, addr, port);
 			// Serialize
-			byte[] serialized1 = nimbus.getSerialization().serializeObject(standard);
-			byte[] serialized2 = nimbus.getSerialization().serializeObject(indexed);
-			// Assert valid deserial
-			ServerPacket deStandard = nimbus.getSerialization().deserializeObject(serialized1, ServerPacket.class);
-			IndexOrderedServerPacket deIndexed = nimbus.getSerialization().deserializeObject(serialized2, IndexOrderedServerPacket.class);
+			byte[] serializedStandard = nimbus.getSerialization().serializeObject(standard);
+			byte[] serializedIndexed = nimbus.getSerialization().serializeObject(indexed);
+			// Assert valid deserialization
+			ServerPacket deStandard = nimbus.getSerialization().deserializeObject(serializedStandard, ServerPacket.class);
+			IndexOrderedServerPacket deIndexed = nimbus.getSerialization().deserializeObject(serializedIndexed, IndexOrderedServerPacket.class);
 			assertEquals(standard, deStandard);
 			assertEquals(indexed, deIndexed);
 			// Different serialized content
-			int len = Math.min(serialized1.length, serialized2.length);
+			int len = Math.min(serializedStandard.length, serializedIndexed.length);
 			for (int i = 0; i < len - 1; i++)
-				if (serialized1[i] != serialized2[i])
-					return;
+				if (serializedStandard[i] != serializedIndexed[i])
+					fail("Mismatch at: " + i);
 			// Fail if same content
 			fail("Serialized arrays were the same despite one supposed to have different order declared by annotations!");
 		}
